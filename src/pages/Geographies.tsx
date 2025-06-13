@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,41 +7,41 @@ import { useToast } from '@/hooks/use-toast';
 import DataTable from '../components/DataTable';
 import FormDialog from '../components/FormDialog';
 import { mockDataService } from '../services/mockDataService';
-import { Category } from '../types';
+import { Geography } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
-const Categories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+const Geographies = () => {
+  const [geographies, setGeographies] = useState<Geography[]>([]);
+  const [filteredGeographies, setFilteredGeographies] = useState<Geography[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDialog, setShowDialog] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingGeography, setEditingGeography] = useState<Geography | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   
   const { toast } = useToast();
   const { currentUser, hasPermission } = useAuth();
 
   useEffect(() => {
-    loadCategories();
+    loadGeographies();
   }, []);
 
   useEffect(() => {
-    const filtered = categories.filter(category =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = geographies.filter(geography =>
+      geography.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredCategories(filtered);
-  }, [categories, searchTerm]);
+    setFilteredGeographies(filtered);
+  }, [geographies, searchTerm]);
 
-  const loadCategories = async () => {
+  const loadGeographies = async () => {
     try {
       setLoading(true);
-      const data = await mockDataService.getCategories();
-      setCategories(data);
+      const data = await mockDataService.getGeographies();
+      setGeographies(data);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to load categories",
+        description: "Failed to load geographies",
         variant: "destructive",
       });
     } finally {
@@ -49,49 +50,49 @@ const Categories = () => {
   };
 
   const handleCreate = () => {
-    setEditingCategory(null);
+    setEditingGeography(null);
     setShowDialog(true);
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
+  const handleEdit = (geography: Geography) => {
+    setEditingGeography(geography);
     setShowDialog(true);
   };
 
-  const handleDelete = async (category: Category) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) {
+  const handleDelete = async (geography: Geography) => {
+    if (!window.confirm('Are you sure you want to delete this geography?')) {
       return;
     }
 
     try {
-      await mockDataService.deleteCategory(category.id, currentUser?.id || 'unknown');
+      await mockDataService.deleteGeography(geography.id, currentUser?.id || 'unknown');
       toast({
         title: "Success",
-        description: "Category deleted successfully",
+        description: "Geography deleted successfully",
       });
-      loadCategories();
+      loadGeographies();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete category",
+        description: "Failed to delete geography",
         variant: "destructive",
       });
     }
   };
 
-  const handleSubmitForApproval = async (category: Category) => {
+  const handleSubmitForApproval = async (geography: Geography) => {
     try {
       await mockDataService.submitForApproval(
-        'Category',
-        category.id,
+        'Geography',
+        geography.id,
         currentUser?.id || 'unknown',
-        category
+        geography
       );
       toast({
         title: "Success",
-        description: "Category submitted for approval",
+        description: "Geography submitted for approval",
       });
-      loadCategories();
+      loadGeographies();
     } catch (error) {
       toast({
         title: "Error",
@@ -101,46 +102,46 @@ const Categories = () => {
     }
   };
 
-  const handleApprove = async (category: Category) => {
+  const handleApprove = async (geography: Geography) => {
     try {
-      await mockDataService.updateCategory(category.id, {
+      await mockDataService.updateGeography(geography.id, {
         approvalStatus: 'Approved',
         modifiedBy: currentUser?.id || 'unknown',
         modifiedDate: new Date().toISOString(),
       });
       toast({
         title: "Success",
-        description: "Category approved successfully",
+        description: "Geography approved successfully",
       });
-      loadCategories();
+      loadGeographies();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to approve category",
+        description: "Failed to approve geography",
         variant: "destructive",
       });
     }
   };
 
-  const handleReject = async (category: Category) => {
+  const handleReject = async (geography: Geography) => {
     const reason = window.prompt('Please provide a reason for rejection:');
     if (!reason) return;
 
     try {
-      await mockDataService.updateCategory(category.id, {
+      await mockDataService.updateGeography(geography.id, {
         approvalStatus: 'Rejected',
         modifiedBy: currentUser?.id || 'unknown',
         modifiedDate: new Date().toISOString(),
       });
       toast({
         title: "Success",
-        description: "Category rejected",
+        description: "Geography rejected",
       });
-      loadCategories();
+      loadGeographies();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to reject category",
+        description: "Failed to reject geography",
         variant: "destructive",
       });
     }
@@ -150,20 +151,22 @@ const Categories = () => {
     try {
       setFormLoading(true);
       
-      if (editingCategory) {
-        await mockDataService.updateCategory(editingCategory.id, {
+      if (editingGeography) {
+        await mockDataService.updateGeography(editingGeography.id, {
           name: formData.name,
+          type: formData.type,
           parentId: formData.parentId || undefined,
           modifiedBy: currentUser?.id || 'unknown',
           modifiedDate: new Date().toISOString(),
         });
         toast({
           title: "Success",
-          description: "Category updated successfully",
+          description: "Geography updated successfully",
         });
       } else {
-        await mockDataService.createCategory({
+        await mockDataService.createGeography({
           name: formData.name,
+          type: formData.type,
           parentId: formData.parentId || undefined,
           status: 'Active',
           approvalStatus: 'Pending',
@@ -172,16 +175,16 @@ const Categories = () => {
         });
         toast({
           title: "Success",
-          description: "Category created successfully",
+          description: "Geography created successfully",
         });
       }
       
       setShowDialog(false);
-      loadCategories();
+      loadGeographies();
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to ${editingCategory ? 'update' : 'create'} category`,
+        description: `Failed to ${editingGeography ? 'update' : 'create'} geography`,
         variant: "destructive",
       });
     } finally {
@@ -191,12 +194,13 @@ const Categories = () => {
 
   const columns = [
     { key: 'name', label: 'Name' },
+    { key: 'type', label: 'Type' },
     { 
       key: 'parentId', 
-      label: 'Parent Category',
+      label: 'Parent Geography',
       render: (parentId: string) => {
-        if (!parentId) return 'Root Category';
-        const parent = categories.find(c => c.id === parentId);
+        if (!parentId) return 'Root Geography';
+        const parent = geographies.find(g => g.id === parentId);
         return parent?.name || 'Unknown';
       }
     },
@@ -213,22 +217,35 @@ const Categories = () => {
   const formFields = [
     {
       name: 'name',
-      label: 'Category Name',
+      label: 'Geography Name',
       type: 'text' as const,
       required: true,
-      value: editingCategory?.name || '',
+      value: editingGeography?.name || '',
+    },
+    {
+      name: 'type',
+      label: 'Type',
+      type: 'select' as const,
+      required: true,
+      options: [
+        { value: 'Country', label: 'Country' },
+        { value: 'State', label: 'State' },
+        { value: 'City', label: 'City' },
+        { value: 'Zone', label: 'Zone' },
+      ],
+      value: editingGeography?.type || '',
     },
     {
       name: 'parentId',
-      label: 'Parent Category',
+      label: 'Parent Geography',
       type: 'select' as const,
       options: [
-        { value: '', label: 'Root Category' },
-        ...categories
-          .filter(c => c.id !== editingCategory?.id)
-          .map(c => ({ value: c.id, label: c.name }))
+        { value: '', label: 'Root Geography' },
+        ...geographies
+          .filter(g => g.id !== editingGeography?.id)
+          .map(g => ({ value: g.id, label: `${g.name} (${g.type})` }))
       ],
-      value: editingCategory?.parentId || '',
+      value: editingGeography?.parentId || '',
     },
   ];
 
@@ -236,13 +253,13 @@ const Categories = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-2">Manage category hierarchy</p>
+          <h1 className="text-3xl font-bold text-gray-900">Geographies</h1>
+          <p className="text-gray-600 mt-2">Manage geography hierarchy</p>
         </div>
         {hasPermission('create') && (
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Category
+            Add Geography
           </Button>
         )}
       </div>
@@ -251,7 +268,7 @@ const Categories = () => {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search categories..."
+            placeholder="Search geographies..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -260,7 +277,7 @@ const Categories = () => {
       </div>
 
       <DataTable
-        data={filteredCategories}
+        data={filteredGeographies}
         columns={columns}
         onEdit={hasPermission('edit') ? handleEdit : undefined}
         onDelete={hasPermission('delete') ? handleDelete : undefined}
@@ -273,7 +290,7 @@ const Categories = () => {
       <FormDialog
         open={showDialog}
         onOpenChange={setShowDialog}
-        title={editingCategory ? 'Edit Category' : 'Create Category'}
+        title={editingGeography ? 'Edit Geography' : 'Create Geography'}
         fields={formFields}
         onSubmit={handleFormSubmit}
         loading={formLoading}
@@ -282,4 +299,4 @@ const Categories = () => {
   );
 };
 
-export default Categories;
+export default Geographies;

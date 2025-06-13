@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,41 +7,42 @@ import { useToast } from '@/hooks/use-toast';
 import DataTable from '../components/DataTable';
 import FormDialog from '../components/FormDialog';
 import { mockDataService } from '../services/mockDataService';
-import { Category } from '../types';
+import { Role } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
-const Categories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+const Roles = () => {
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDialog, setShowDialog] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   
   const { toast } = useToast();
   const { currentUser, hasPermission } = useAuth();
 
   useEffect(() => {
-    loadCategories();
+    loadRoles();
   }, []);
 
   useEffect(() => {
-    const filtered = categories.filter(category =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = roles.filter(role =>
+      role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.department.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredCategories(filtered);
-  }, [categories, searchTerm]);
+    setFilteredRoles(filtered);
+  }, [roles, searchTerm]);
 
-  const loadCategories = async () => {
+  const loadRoles = async () => {
     try {
       setLoading(true);
-      const data = await mockDataService.getCategories();
-      setCategories(data);
+      const data = await mockDataService.getRoles();
+      setRoles(data);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to load categories",
+        description: "Failed to load roles",
         variant: "destructive",
       });
     } finally {
@@ -49,49 +51,49 @@ const Categories = () => {
   };
 
   const handleCreate = () => {
-    setEditingCategory(null);
+    setEditingRole(null);
     setShowDialog(true);
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
+  const handleEdit = (role: Role) => {
+    setEditingRole(role);
     setShowDialog(true);
   };
 
-  const handleDelete = async (category: Category) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) {
+  const handleDelete = async (role: Role) => {
+    if (!window.confirm('Are you sure you want to delete this role?')) {
       return;
     }
 
     try {
-      await mockDataService.deleteCategory(category.id, currentUser?.id || 'unknown');
+      await mockDataService.deleteRole(role.id, currentUser?.id || 'unknown');
       toast({
         title: "Success",
-        description: "Category deleted successfully",
+        description: "Role deleted successfully",
       });
-      loadCategories();
+      loadRoles();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete category",
+        description: "Failed to delete role",
         variant: "destructive",
       });
     }
   };
 
-  const handleSubmitForApproval = async (category: Category) => {
+  const handleSubmitForApproval = async (role: Role) => {
     try {
       await mockDataService.submitForApproval(
-        'Category',
-        category.id,
+        'Role',
+        role.id,
         currentUser?.id || 'unknown',
-        category
+        role
       );
       toast({
         title: "Success",
-        description: "Category submitted for approval",
+        description: "Role submitted for approval",
       });
-      loadCategories();
+      loadRoles();
     } catch (error) {
       toast({
         title: "Error",
@@ -101,46 +103,46 @@ const Categories = () => {
     }
   };
 
-  const handleApprove = async (category: Category) => {
+  const handleApprove = async (role: Role) => {
     try {
-      await mockDataService.updateCategory(category.id, {
+      await mockDataService.updateRole(role.id, {
         approvalStatus: 'Approved',
         modifiedBy: currentUser?.id || 'unknown',
         modifiedDate: new Date().toISOString(),
       });
       toast({
         title: "Success",
-        description: "Category approved successfully",
+        description: "Role approved successfully",
       });
-      loadCategories();
+      loadRoles();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to approve category",
+        description: "Failed to approve role",
         variant: "destructive",
       });
     }
   };
 
-  const handleReject = async (category: Category) => {
+  const handleReject = async (role: Role) => {
     const reason = window.prompt('Please provide a reason for rejection:');
     if (!reason) return;
 
     try {
-      await mockDataService.updateCategory(category.id, {
+      await mockDataService.updateRole(role.id, {
         approvalStatus: 'Rejected',
         modifiedBy: currentUser?.id || 'unknown',
         modifiedDate: new Date().toISOString(),
       });
       toast({
         title: "Success",
-        description: "Category rejected",
+        description: "Role rejected",
       });
-      loadCategories();
+      loadRoles();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to reject category",
+        description: "Failed to reject role",
         variant: "destructive",
       });
     }
@@ -150,20 +152,22 @@ const Categories = () => {
     try {
       setFormLoading(true);
       
-      if (editingCategory) {
-        await mockDataService.updateCategory(editingCategory.id, {
+      if (editingRole) {
+        await mockDataService.updateRole(editingRole.id, {
           name: formData.name,
+          department: formData.department,
           parentId: formData.parentId || undefined,
           modifiedBy: currentUser?.id || 'unknown',
           modifiedDate: new Date().toISOString(),
         });
         toast({
           title: "Success",
-          description: "Category updated successfully",
+          description: "Role updated successfully",
         });
       } else {
-        await mockDataService.createCategory({
+        await mockDataService.createRole({
           name: formData.name,
+          department: formData.department,
           parentId: formData.parentId || undefined,
           status: 'Active',
           approvalStatus: 'Pending',
@@ -172,16 +176,16 @@ const Categories = () => {
         });
         toast({
           title: "Success",
-          description: "Category created successfully",
+          description: "Role created successfully",
         });
       }
       
       setShowDialog(false);
-      loadCategories();
+      loadRoles();
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to ${editingCategory ? 'update' : 'create'} category`,
+        description: `Failed to ${editingRole ? 'update' : 'create'} role`,
         variant: "destructive",
       });
     } finally {
@@ -191,12 +195,13 @@ const Categories = () => {
 
   const columns = [
     { key: 'name', label: 'Name' },
+    { key: 'department', label: 'Department' },
     { 
       key: 'parentId', 
-      label: 'Parent Category',
+      label: 'Parent Role',
       render: (parentId: string) => {
-        if (!parentId) return 'Root Category';
-        const parent = categories.find(c => c.id === parentId);
+        if (!parentId) return 'Root Role';
+        const parent = roles.find(r => r.id === parentId);
         return parent?.name || 'Unknown';
       }
     },
@@ -210,25 +215,38 @@ const Categories = () => {
     },
   ];
 
+  const departments = [
+    'Finance', 'Human Resources', 'Information Technology', 'Marketing', 
+    'Sales', 'Operations', 'Legal', 'Product Management', 'Customer Service'
+  ];
+
   const formFields = [
     {
       name: 'name',
-      label: 'Category Name',
+      label: 'Role Name',
       type: 'text' as const,
       required: true,
-      value: editingCategory?.name || '',
+      value: editingRole?.name || '',
+    },
+    {
+      name: 'department',
+      label: 'Department',
+      type: 'select' as const,
+      required: true,
+      options: departments.map(dept => ({ value: dept, label: dept })),
+      value: editingRole?.department || '',
     },
     {
       name: 'parentId',
-      label: 'Parent Category',
+      label: 'Parent Role',
       type: 'select' as const,
       options: [
-        { value: '', label: 'Root Category' },
-        ...categories
-          .filter(c => c.id !== editingCategory?.id)
-          .map(c => ({ value: c.id, label: c.name }))
+        { value: '', label: 'Root Role' },
+        ...roles
+          .filter(r => r.id !== editingRole?.id)
+          .map(r => ({ value: r.id, label: `${r.name} (${r.department})` }))
       ],
-      value: editingCategory?.parentId || '',
+      value: editingRole?.parentId || '',
     },
   ];
 
@@ -236,13 +254,13 @@ const Categories = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-2">Manage category hierarchy</p>
+          <h1 className="text-3xl font-bold text-gray-900">Roles</h1>
+          <p className="text-gray-600 mt-2">Manage role hierarchy and departments</p>
         </div>
         {hasPermission('create') && (
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Category
+            Add Role
           </Button>
         )}
       </div>
@@ -251,7 +269,7 @@ const Categories = () => {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search categories..."
+            placeholder="Search roles..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -260,7 +278,7 @@ const Categories = () => {
       </div>
 
       <DataTable
-        data={filteredCategories}
+        data={filteredRoles}
         columns={columns}
         onEdit={hasPermission('edit') ? handleEdit : undefined}
         onDelete={hasPermission('delete') ? handleDelete : undefined}
@@ -273,7 +291,7 @@ const Categories = () => {
       <FormDialog
         open={showDialog}
         onOpenChange={setShowDialog}
-        title={editingCategory ? 'Edit Category' : 'Create Category'}
+        title={editingRole ? 'Edit Role' : 'Create Role'}
         fields={formFields}
         onSubmit={handleFormSubmit}
         loading={formLoading}
@@ -282,4 +300,4 @@ const Categories = () => {
   );
 };
 
-export default Categories;
+export default Roles;

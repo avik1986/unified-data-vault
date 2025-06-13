@@ -20,6 +20,13 @@ interface Column {
   render?: (value: any, row: any) => React.ReactNode;
 }
 
+interface CustomAction {
+  label: string;
+  icon: React.ComponentType<any>;
+  onClick: (item: any) => void;
+  condition: (item: any) => boolean;
+}
+
 interface DataTableProps {
   data: any[];
   columns: Column[];
@@ -28,6 +35,7 @@ interface DataTableProps {
   onSubmitForApproval?: (item: any) => void;
   onApprove?: (item: any) => void;
   onReject?: (item: any) => void;
+  customActions?: CustomAction[];
   loading?: boolean;
 }
 
@@ -54,6 +62,7 @@ const DataTable: React.FC<DataTableProps> = ({
   onSubmitForApproval,
   onApprove,
   onReject,
+  customActions = [],
   loading = false,
 }) => {
   const { hasPermission } = useAuth();
@@ -144,6 +153,22 @@ const DataTable: React.FC<DataTableProps> = ({
                       <X size={16} />
                     </Button>
                   )}
+                  
+                  {customActions.map((action, actionIndex) => {
+                    if (!action.condition(item)) return null;
+                    const Icon = action.icon;
+                    return (
+                      <Button
+                        key={actionIndex}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => action.onClick(item)}
+                        title={action.label}
+                      >
+                        <Icon size={16} />
+                      </Button>
+                    );
+                  })}
                 </div>
               </TableCell>
             </TableRow>

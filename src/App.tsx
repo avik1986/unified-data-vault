@@ -8,6 +8,13 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./components/Navigation";
 import Dashboard from "./pages/Dashboard";
 import Categories from "./pages/Categories";
+import Geographies from "./pages/Geographies";
+import Roles from "./pages/Roles";
+import Users from "./pages/Users";
+import Attributes from "./pages/Attributes";
+import Entities from "./pages/Entities";
+import ApprovalRules from "./pages/ApprovalRules";
+import Approvals from "./pages/Approvals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,13 +32,13 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/categories" element={<Categories />} />
-                <Route path="/geographies" element={<div>Geographies - Coming Soon</div>} />
-                <Route path="/roles" element={<div>Roles - Coming Soon</div>} />
-                <Route path="/users" element={<div>Users - Coming Soon</div>} />
-                <Route path="/attributes" element={<div>Attributes - Coming Soon</div>} />
-                <Route path="/entities" element={<div>Entities - Coming Soon</div>} />
-                <Route path="/approval-rules" element={<div>Approval Rules - Coming Soon</div>} />
-                <Route path="/approvals" element={<div>Approvals - Coming Soon</div>} />
+                <Route path="/geographies" element={<Geographies />} />
+                <Route path="/roles" element={<Roles />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/attributes" element={<Attributes />} />
+                <Route path="/entities" element={<Entities />} />
+                <Route path="/approval-rules" element={<ApprovalRules />} />
+                <Route path="/approvals" element={<Approvals />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
