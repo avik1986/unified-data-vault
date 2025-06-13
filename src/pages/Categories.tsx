@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,6 +208,13 @@ const Categories = () => {
     },
   ];
 
+  const handleTreeSelect = (item: TreeItem) => {
+    const category = categories.find(c => c.id === item.id);
+    if (category) {
+      setSelectedCategory(category);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -245,7 +251,7 @@ const Categories = () => {
             ) : (
               <TreeView
                 data={filteredCategories}
-                onSelect={setSelectedCategory}
+                onSelect={handleTreeSelect}
                 selectedId={selectedCategory?.id}
               />
             )}

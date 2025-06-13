@@ -33,7 +33,7 @@ const TreeView: React.FC<TreeViewProps> = ({ data, onSelect, selectedId }) => {
 
   const buildHierarchy = (items: TreeItem[]): TreeItem[] => {
     const itemMap = new Map<string, TreeItem & { children: TreeItem[] }>();
-    const rootItems: (TreeItem & { children: TreeItem[] })[] = [];
+    const rootItems: TreeItem[] = [];
 
     // Initialize all items with empty children arrays
     items.forEach(item => {
@@ -58,7 +58,7 @@ const TreeView: React.FC<TreeViewProps> = ({ data, onSelect, selectedId }) => {
     return `L${level}`;
   };
 
-  const renderTreeNode = (item: TreeItem & { children: TreeItem[] }, level: number = 0) => {
+  const renderTreeNode = (item: TreeItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.has(item.id);
     const isSelected = selectedId === item.id;
@@ -97,7 +97,7 @@ const TreeView: React.FC<TreeViewProps> = ({ data, onSelect, selectedId }) => {
           <span className="flex-1 text-sm">{item.name}</span>
         </div>
         
-        {hasChildren && isExpanded && (
+        {hasChildren && isExpanded && item.children && (
           <div>
             {item.children.map(child => renderTreeNode(child, level + 1))}
           </div>

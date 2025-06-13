@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -189,6 +188,13 @@ const Geographies = () => {
     geography.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleTreeSelect = (item: TreeItem) => {
+    const geography = geographies.find(g => g.id === item.id);
+    if (geography) {
+      setSelectedGeography(geography);
+    }
+  };
+
   const formFields = [
     {
       name: 'name',
@@ -265,7 +271,7 @@ const Geographies = () => {
             ) : (
               <TreeView
                 data={filteredGeographies}
-                onSelect={setSelectedGeography}
+                onSelect={handleTreeSelect}
                 selectedId={selectedGeography?.id}
               />
             )}
