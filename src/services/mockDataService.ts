@@ -32,13 +32,30 @@ class MockDataService {
       approvalStatus: 'Approved' as ApprovalStatus,
       createdBy: 'admin',
       createdDate: '2024-01-01',
+    },
+    {
+      id: '4',
+      name: 'Clothing',
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-02',
+    },
+    {
+      id: '5',
+      name: "Men's Clothing",
+      parentId: '4',
+      status: 'Active' as Status,
+      approvalStatus: 'Pending' as ApprovalStatus,
+      createdBy: 'jane.smith',
+      createdDate: '2024-01-03',
     }
   ];
 
   private geographies: Geography[] = [
     {
       id: '1',
-      name: 'India',
+      name: 'United States',
       type: 'Country',
       status: 'Active' as Status,
       approvalStatus: 'Approved' as ApprovalStatus,
@@ -47,7 +64,7 @@ class MockDataService {
     },
     {
       id: '2',
-      name: 'Karnataka',
+      name: 'California',
       type: 'State',
       parentId: '1',
       status: 'Active' as Status,
@@ -57,19 +74,38 @@ class MockDataService {
     },
     {
       id: '3',
-      name: 'Bangalore',
+      name: 'Los Angeles',
       type: 'City',
       parentId: '2',
       status: 'Active' as Status,
       approvalStatus: 'Approved' as ApprovalStatus,
       createdBy: 'admin',
       createdDate: '2024-01-01',
+    },
+    {
+      id: '4',
+      name: 'Texas',
+      type: 'State',
+      parentId: '1',
+      status: 'Active' as Status,
+      approvalStatus: 'Pending' as ApprovalStatus,
+      createdBy: 'jane.smith',
+      createdDate: '2024-01-03',
     }
   ];
 
   private roles: Role[] = [
     {
       id: '1',
+      name: 'CEO',
+      department: 'Executive',
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-01',
+    },
+    {
+      id: '2',
       name: 'Finance Director',
       department: 'Finance',
       status: 'Active' as Status,
@@ -78,25 +114,34 @@ class MockDataService {
       createdDate: '2024-01-01',
     },
     {
-      id: '2',
-      name: 'Finance Manager',
-      department: 'Finance',
-      parentId: '1',
+      id: '3',
+      name: 'Sales Director',
+      department: 'Sales',
       status: 'Active' as Status,
       approvalStatus: 'Approved' as ApprovalStatus,
       createdBy: 'admin',
       createdDate: '2024-01-01',
+    },
+    {
+      id: '4',
+      name: 'Sales Manager',
+      department: 'Sales',
+      parentId: '3',
+      status: 'Active' as Status,
+      approvalStatus: 'Pending' as ApprovalStatus,
+      createdBy: 'jane.smith',
+      createdDate: '2024-01-03',
     }
   ];
 
   private users: User[] = [
     {
       id: '1',
-      fullName: 'John Doe',
-      email: 'john.doe@company.com',
+      fullName: 'John Admin',
+      email: 'admin@company.com',
       phoneNumber: '+1234567890',
       roleId: '1',
-      department: 'Finance',
+      department: 'Executive',
       geographyIds: ['1'],
       categoryIds: ['1'],
       userRole: 'Admin',
@@ -107,8 +152,8 @@ class MockDataService {
     },
     {
       id: '2',
-      fullName: 'Jane Smith',
-      email: 'jane.smith@company.com',
+      fullName: 'Jane Maker',
+      email: 'maker@company.com',
       phoneNumber: '+1234567891',
       roleId: '2',
       department: 'Finance',
@@ -119,13 +164,56 @@ class MockDataService {
       approvalStatus: 'Approved' as ApprovalStatus,
       createdBy: 'admin',
       createdDate: '2024-01-01',
+    },
+    {
+      id: '3',
+      fullName: 'Bob Checker',
+      email: 'checker@company.com',
+      phoneNumber: '+1234567892',
+      roleId: '3',
+      department: 'Sales',
+      geographyIds: ['3'],
+      categoryIds: ['3'],
+      userRole: 'Checker',
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-01',
+    },
+    {
+      id: '4',
+      fullName: 'Alice Viewer',
+      email: 'viewer@company.com',
+      phoneNumber: '+1234567893',
+      roleId: '4',
+      department: 'Sales',
+      geographyIds: ['4'],
+      categoryIds: ['4'],
+      userRole: 'Viewer',
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-01',
     }
   ];
 
   private attributes: Attribute[] = [
     {
       id: '1',
-      fieldName: 'Battery Life',
+      fieldName: 'Product Name',
+      dataType: 'string',
+      context: 'Electronics',
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-01',
+      validationRules: [
+        { type: 'required', value: true, message: 'Product name is required' }
+      ]
+    },
+    {
+      id: '2',
+      fieldName: 'Price',
       dataType: 'number',
       context: 'Electronics',
       status: 'Active' as Status,
@@ -133,12 +221,12 @@ class MockDataService {
       createdBy: 'admin',
       createdDate: '2024-01-01',
       validationRules: [
-        { type: 'range', value: 0, message: 'Battery life must be greater than 0' }
+        { type: 'range', value: 0, message: 'Price must be greater than 0' }
       ]
     },
     {
-      id: '2',
-      fieldName: 'Screen Size',
+      id: '3',
+      fieldName: 'Brand',
       dataType: 'string',
       context: 'Electronics',
       status: 'Active' as Status,
@@ -153,7 +241,7 @@ class MockDataService {
       id: '1',
       name: 'iPhone 15',
       entityType: 'Product',
-      attributeIds: ['1', '2'],
+      attributeIds: ['1', '2', '3'],
       categoryIds: ['2'],
       geographyIds: ['1'],
       status: 'Active' as Status,
@@ -161,8 +249,26 @@ class MockDataService {
       createdBy: 'jane.smith',
       createdDate: '2024-01-01',
       attributeValues: {
-        'Battery Life': '20',
-        'Screen Size': '6.1 inches'
+        'Product Name': 'iPhone 15',
+        'Price': '999',
+        'Brand': 'Apple'
+      }
+    },
+    {
+      id: '2',
+      name: 'Samsung Galaxy S24',
+      entityType: 'Product',
+      attributeIds: ['1', '2', '3'],
+      categoryIds: ['2'],
+      geographyIds: ['2'],
+      status: 'Active' as Status,
+      approvalStatus: 'Pending' as ApprovalStatus,
+      createdBy: 'jane.smith',
+      createdDate: '2024-01-03',
+      attributeValues: {
+        'Product Name': 'Samsung Galaxy S24',
+        'Price': '899',
+        'Brand': 'Samsung'
       }
     }
   ];
@@ -175,9 +281,27 @@ class MockDataService {
       conditions: [
         {
           id: '1',
-          attributeId: '1',
+          attributeId: '2',
           operator: 'greater_than',
-          value: '15'
+          value: '500'
+        }
+      ],
+      assignedRoles: ['1', '2'],
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-01',
+    },
+    {
+      id: '2',
+      ruleName: 'User Creation Rule',
+      entityType: 'User',
+      conditions: [
+        {
+          id: '2',
+          attributeId: '1',
+          operator: 'equals',
+          value: 'any'
         }
       ],
       assignedRoles: ['1'],
@@ -188,8 +312,72 @@ class MockDataService {
     }
   ];
 
-  private auditLogs: AuditLog[] = [];
-  private approvalRequests: ApprovalRequest[] = [];
+  private auditLogs: AuditLog[] = [
+    {
+      id: '1',
+      userId: 'jane.smith',
+      action: 'CREATE',
+      entityType: 'Category',
+      entityId: '5',
+      timestamp: '2024-01-03T10:00:00Z',
+      changes: { name: "Men's Clothing", parentId: '4' }
+    },
+    {
+      id: '2',
+      userId: 'jane.smith',
+      action: 'CREATE',
+      entityType: 'Product',
+      entityId: '2',
+      timestamp: '2024-01-03T11:00:00Z',
+      changes: { name: 'Samsung Galaxy S24', price: '899' }
+    }
+  ];
+
+  private approvalRequests: ApprovalRequest[] = [
+    {
+      id: '1',
+      entityType: 'Category',
+      entityId: '5',
+      requestedBy: 'Jane Maker',
+      assignedTo: ['1'],
+      status: 'Pending',
+      createdDate: '2024-01-03T10:00:00Z',
+      data: {
+        name: "Men's Clothing",
+        parentId: '4'
+      },
+      comments: 'New category for men\'s clothing line'
+    },
+    {
+      id: '2',
+      entityType: 'Product',
+      entityId: '2',
+      requestedBy: 'Jane Maker',
+      assignedTo: ['1', '2'],
+      status: 'Pending',
+      createdDate: '2024-01-03T11:00:00Z',
+      data: {
+        name: 'Samsung Galaxy S24',
+        price: 899,
+        brand: 'Samsung'
+      }
+    },
+    {
+      id: '3',
+      entityType: 'User',
+      entityId: '5',
+      requestedBy: 'Jane Maker',
+      assignedTo: ['1'],
+      status: 'Approved',
+      createdDate: '2024-01-02T14:00:00Z',
+      data: {
+        name: 'Sarah Johnson',
+        email: 'sarah.johnson@company.com',
+        role: 'Sales Manager'
+      },
+      comments: 'Approved by John Admin'
+    }
+  ];
 
   // Helper method to generate IDs
   private generateId(): string {

@@ -156,7 +156,7 @@ const Roles = () => {
         await mockDataService.updateRole(editingRole.id, {
           name: formData.name,
           department: formData.department,
-          parentId: formData.parentId || undefined,
+          parentId: formData.parentId === 'empty' ? undefined : formData.parentId,
           modifiedBy: currentUser?.id || 'unknown',
           modifiedDate: new Date().toISOString(),
         });
@@ -168,7 +168,7 @@ const Roles = () => {
         await mockDataService.createRole({
           name: formData.name,
           department: formData.department,
-          parentId: formData.parentId || undefined,
+          parentId: formData.parentId === 'empty' ? undefined : formData.parentId,
           status: 'Active',
           approvalStatus: 'Pending',
           createdBy: currentUser?.id || 'unknown',
@@ -216,7 +216,7 @@ const Roles = () => {
   ];
 
   const departments = [
-    'Finance', 'Human Resources', 'Information Technology', 'Marketing', 
+    'Executive', 'Finance', 'Human Resources', 'Information Technology', 'Marketing', 
     'Sales', 'Operations', 'Legal', 'Product Management', 'Customer Service'
   ];
 
@@ -234,19 +234,19 @@ const Roles = () => {
       type: 'select' as const,
       required: true,
       options: departments.map(dept => ({ value: dept, label: dept })),
-      value: editingRole?.department || '',
+      value: editingRole?.department || 'Executive',
     },
     {
       name: 'parentId',
       label: 'Parent Role',
       type: 'select' as const,
       options: [
-        { value: '', label: 'Root Role' },
+        { value: 'empty', label: 'Root Role' },
         ...roles
           .filter(r => r.id !== editingRole?.id)
           .map(r => ({ value: r.id, label: `${r.name} (${r.department})` }))
       ],
-      value: editingRole?.parentId || '',
+      value: editingRole?.parentId || 'empty',
     },
   ];
 

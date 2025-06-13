@@ -172,8 +172,8 @@ const Users = () => {
           phoneNumber: formData.phoneNumber,
           roleId: formData.roleId,
           department: selectedRole?.department || '',
-          geographyIds: Array.isArray(formData.geographyIds) ? formData.geographyIds : [formData.geographyIds].filter(Boolean),
-          categoryIds: Array.isArray(formData.categoryIds) ? formData.categoryIds : [formData.categoryIds].filter(Boolean),
+          geographyIds: formData.geographyIds === 'empty' ? [] : [formData.geographyIds],
+          categoryIds: formData.categoryIds === 'empty' ? [] : [formData.categoryIds],
           userRole: formData.userRole,
           modifiedBy: currentUser?.id || 'unknown',
           modifiedDate: new Date().toISOString(),
@@ -189,8 +189,8 @@ const Users = () => {
           phoneNumber: formData.phoneNumber,
           roleId: formData.roleId,
           department: selectedRole?.department || '',
-          geographyIds: Array.isArray(formData.geographyIds) ? formData.geographyIds : [formData.geographyIds].filter(Boolean),
-          categoryIds: Array.isArray(formData.categoryIds) ? formData.categoryIds : [formData.categoryIds].filter(Boolean),
+          geographyIds: formData.geographyIds === 'empty' ? [] : [formData.geographyIds],
+          categoryIds: formData.categoryIds === 'empty' ? [] : [formData.categoryIds],
           userRole: formData.userRole,
           status: 'Active',
           approvalStatus: 'Pending',
@@ -267,7 +267,7 @@ const Users = () => {
       type: 'select' as const,
       required: true,
       options: roles.map(role => ({ value: role.id, label: `${role.name} (${role.department})` })),
-      value: editingUser?.roleId || '',
+      value: editingUser?.roleId || (roles.length > 0 ? roles[0].id : ''),
     },
     {
       name: 'userRole',
@@ -280,21 +280,27 @@ const Users = () => {
         { value: 'Admin', label: 'Admin' },
         { value: 'Viewer', label: 'Viewer' },
       ],
-      value: editingUser?.userRole || '',
+      value: editingUser?.userRole || 'Maker',
     },
     {
       name: 'geographyIds',
       label: 'Geography',
       type: 'select' as const,
-      options: geographies.map(geo => ({ value: geo.id, label: `${geo.name} (${geo.type})` })),
-      value: editingUser?.geographyIds?.[0] || '',
+      options: [
+        { value: 'empty', label: 'No Geography' },
+        ...geographies.map(geo => ({ value: geo.id, label: `${geo.name} (${geo.type})` }))
+      ],
+      value: editingUser?.geographyIds?.[0] || 'empty',
     },
     {
       name: 'categoryIds',
       label: 'Category',
       type: 'select' as const,
-      options: categories.map(cat => ({ value: cat.id, label: cat.name })),
-      value: editingUser?.categoryIds?.[0] || '',
+      options: [
+        { value: 'empty', label: 'No Category' },
+        ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+      ],
+      value: editingUser?.categoryIds?.[0] || 'empty',
     },
   ];
 

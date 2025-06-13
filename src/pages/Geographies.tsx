@@ -155,7 +155,7 @@ const Geographies = () => {
         await mockDataService.updateGeography(editingGeography.id, {
           name: formData.name,
           type: formData.type,
-          parentId: formData.parentId || undefined,
+          parentId: formData.parentId === 'empty' ? undefined : formData.parentId,
           modifiedBy: currentUser?.id || 'unknown',
           modifiedDate: new Date().toISOString(),
         });
@@ -167,7 +167,7 @@ const Geographies = () => {
         await mockDataService.createGeography({
           name: formData.name,
           type: formData.type,
-          parentId: formData.parentId || undefined,
+          parentId: formData.parentId === 'empty' ? undefined : formData.parentId,
           status: 'Active',
           approvalStatus: 'Pending',
           createdBy: currentUser?.id || 'unknown',
@@ -233,19 +233,19 @@ const Geographies = () => {
         { value: 'City', label: 'City' },
         { value: 'Zone', label: 'Zone' },
       ],
-      value: editingGeography?.type || '',
+      value: editingGeography?.type || 'Country',
     },
     {
       name: 'parentId',
       label: 'Parent Geography',
       type: 'select' as const,
       options: [
-        { value: '', label: 'Root Geography' },
+        { value: 'empty', label: 'Root Geography' },
         ...geographies
           .filter(g => g.id !== editingGeography?.id)
           .map(g => ({ value: g.id, label: `${g.name} (${g.type})` }))
       ],
-      value: editingGeography?.parentId || '',
+      value: editingGeography?.parentId || 'empty',
     },
   ];
 

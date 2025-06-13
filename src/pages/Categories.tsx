@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,7 +154,7 @@ const Categories = () => {
       if (editingCategory) {
         await mockDataService.updateCategory(editingCategory.id, {
           name: formData.name,
-          parentId: formData.parentId || undefined,
+          parentId: formData.parentId === 'empty' ? undefined : formData.parentId,
           modifiedBy: currentUser?.id || 'unknown',
           modifiedDate: new Date().toISOString(),
         });
@@ -164,7 +165,7 @@ const Categories = () => {
       } else {
         await mockDataService.createCategory({
           name: formData.name,
-          parentId: formData.parentId || undefined,
+          parentId: formData.parentId === 'empty' ? undefined : formData.parentId,
           status: 'Active',
           approvalStatus: 'Pending',
           createdBy: currentUser?.id || 'unknown',
@@ -223,12 +224,12 @@ const Categories = () => {
       label: 'Parent Category',
       type: 'select' as const,
       options: [
-        { value: '', label: 'Root Category' },
+        { value: 'empty', label: 'Root Category' },
         ...categories
           .filter(c => c.id !== editingCategory?.id)
           .map(c => ({ value: c.id, label: c.name }))
       ],
-      value: editingCategory?.parentId || '',
+      value: editingCategory?.parentId || 'empty',
     },
   ];
 
