@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'textarea';
+  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'multiselect' | 'checkbox';
   required?: boolean;
   options?: { value: string; label: string; }[];
-  value?: string;
+  value?: string | string[];
+  multiple?: boolean;
 }
 
 interface FormDialogProps {
@@ -39,7 +41,11 @@ const FormDialog: React.FC<FormDialogProps> = ({
     if (open) {
       const initialData: Record<string, any> = {};
       fields.forEach(field => {
-        initialData[field.name] = field.value || '';
+        if (field.type === 'multiselect') {
+          initialData[field.name] = Array.isArray(field.value) ? field.value : [];
+        } else {
+          initialData[field.name] = field.value || '';
+        }
       });
       setFormData(initialData);
     }
@@ -54,9 +60,20 @@ const FormDialog: React.FC<FormDialogProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleMultiSelectChange = (name: string, value: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentValues = Array.isArray(prev[name]) ? prev[name] : [];
+      if (checked) {
+        return { ...prev, [name]: [...currentValues, value] };
+      } else {
+        return { ...prev, [name]: currentValues.filter((v: string) => v !== value) };
+      }
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -90,6 +107,26 @@ const FormDialog: React.FC<FormDialogProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+              ) : field.type === 'multiselect' ? (
+                <div className="space-y-2 border rounded-md p-3 max-h-32 overflow-y-auto">
+                  {field.options?.map((option) => (
+                    <div key={option.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`${field.name}-${option.value}`}
+                        checked={Array.isArray(formData[field.name]) && formData[field.name].includes(option.value)}
+                        onCheckedChange={(checked) => 
+                          handleMultiSelectChange(field.name, option.value, !!checked)
+                        }
+                      />
+                      <Label 
+                        htmlFor={`${field.name}-${option.value}`}
+                        className="text-sm font-normal"
+                      >
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               ) : field.type === 'textarea' ? (
                 <Textarea
                   id={field.name}

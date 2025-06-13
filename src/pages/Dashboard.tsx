@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
   FolderTree, 
   MapPin, 
@@ -11,12 +12,15 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  ArrowRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { mockDataService } from '../services/mockDataService';
 import { ApprovalRequest } from '../types';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     categories: 0,
     geographies: 0,
@@ -67,6 +71,26 @@ const Dashboard = () => {
     loadDashboardData();
   }, []);
 
+  const handleCardClick = (route: string) => {
+    navigate(route);
+  };
+
+  const handleApprovalClick = (entityType: string) => {
+    // Navigate to specific entity page or approvals page
+    const routeMap: Record<string, string> = {
+      'Category': '/categories',
+      'Geography': '/geographies',
+      'User': '/users',
+      'Entity': '/entities',
+      'Product': '/entities',
+      'Role': '/roles',
+      'Attribute': '/attributes',
+    };
+    
+    const route = routeMap[entityType] || '/approvals';
+    navigate(route);
+  };
+
   const statCards = [
     {
       title: 'Categories',
@@ -74,6 +98,8 @@ const Dashboard = () => {
       icon: FolderTree,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
+      route: '/categories',
+      description: 'Manage category hierarchy'
     },
     {
       title: 'Geographies',
@@ -81,6 +107,8 @@ const Dashboard = () => {
       icon: MapPin,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
+      route: '/geographies',
+      description: 'Manage geographical locations'
     },
     {
       title: 'Users',
@@ -88,6 +116,8 @@ const Dashboard = () => {
       icon: Users,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
+      route: '/users',
+      description: 'User management & roles'
     },
     {
       title: 'Entities',
@@ -95,6 +125,8 @@ const Dashboard = () => {
       icon: ClipboardList,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
+      route: '/entities',
+      description: 'Business entity management'
     },
   ];
 
@@ -105,6 +137,8 @@ const Dashboard = () => {
       icon: Clock,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
+      route: '/approvals',
+      description: 'Items awaiting approval'
     },
     {
       title: 'Approved Today',
@@ -112,6 +146,8 @@ const Dashboard = () => {
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
+      route: '/approvals',
+      description: 'Successfully approved items'
     },
     {
       title: 'Rejected Today',
@@ -119,6 +155,8 @@ const Dashboard = () => {
       icon: XCircle,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
+      route: '/approvals',
+      description: 'Items rejected today'
     },
   ];
 
@@ -139,15 +177,19 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Master Data Management System Overview</p>
+        <p className="text-gray-600 mt-2">Master Data Management System Overview - Click any widget for details</p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - All Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <Card key={card.title}>
+            <Card 
+              key={card.title} 
+              className="cursor-pointer hover:shadow-lg transition-shadow duration-200 hover:bg-gray-50"
+              onClick={() => handleCardClick(card.route)}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
                 <div className={`p-2 rounded-md ${card.bgColor}`}>
@@ -156,18 +198,27 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
+                <div className="flex items-center mt-2 text-xs text-blue-600">
+                  <span>View details</span>
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Approval Overview */}
+      {/* Approval Overview - All Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {approvalCards.map((card) => {
           const Icon = card.icon;
           return (
-            <Card key={card.title}>
+            <Card 
+              key={card.title}
+              className="cursor-pointer hover:shadow-lg transition-shadow duration-200 hover:bg-gray-50"
+              onClick={() => handleCardClick(card.route)}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
                 <div className={`p-2 rounded-md ${card.bgColor}`}>
@@ -176,17 +227,32 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
+                <div className="flex items-center mt-2 text-xs text-blue-600">
+                  <span>Drill down</span>
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* Recent Approvals */}
+      {/* Recent Approvals - Enhanced with Drill-down */}
       <Card>
-        <CardHeader>
-          <CardTitle>Recent Approval Requests</CardTitle>
-          <CardDescription>Latest approval activities in the system</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Recent Approval Requests</CardTitle>
+            <CardDescription>Latest approval activities in the system - Click for details</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/approvals')}
+          >
+            View All
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </CardHeader>
         <CardContent>
           {recentApprovals.length === 0 ? (
@@ -197,7 +263,11 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-4">
               {recentApprovals.map((approval) => (
-                <div key={approval.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div 
+                  key={approval.id} 
+                  className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => handleApprovalClick(approval.entityType)}
+                >
                   <div className="flex items-center space-x-4">
                     <Database className="h-8 w-8 text-gray-400" />
                     <div>
@@ -210,9 +280,12 @@ const Dashboard = () => {
                       </p>
                     </div>
                   </div>
-                  <Badge variant={getStatusBadgeVariant(approval.status)}>
-                    {approval.status}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant={getStatusBadgeVariant(approval.status)}>
+                      {approval.status}
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                  </div>
                 </div>
               ))}
             </div>

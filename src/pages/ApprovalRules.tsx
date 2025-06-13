@@ -112,8 +112,8 @@ const ApprovalRules = () => {
           operator: formData.operator,
           value: formData.value,
         }],
-        assignedRoles: Array.isArray(formData.assignedRoles) ? formData.assignedRoles : [formData.assignedRoles].filter(Boolean),
-        assignedUsers: Array.isArray(formData.assignedUsers) ? formData.assignedUsers : [formData.assignedUsers].filter(Boolean),
+        assignedRoles: Array.isArray(formData.assignedRoles) ? formData.assignedRoles : (formData.assignedRoles ? [formData.assignedRoles] : []),
+        assignedUsers: Array.isArray(formData.assignedUsers) ? formData.assignedUsers : (formData.assignedUsers ? [formData.assignedUsers] : []),
       };
       
       if (editingRule) {
@@ -176,6 +176,18 @@ const ApprovalRules = () => {
           return role?.name || 'Unknown';
         });
         return roleNames.join(', ');
+      }
+    },
+    { 
+      key: 'assignedUsers', 
+      label: 'Assigned Users',
+      render: (userIds: string[]) => {
+        if (!userIds || userIds.length === 0) return 'None';
+        const userNames = userIds.map(id => {
+          const user = users.find(u => u.id === id);
+          return user?.fullName || 'Unknown';
+        });
+        return userNames.join(', ');
       }
     },
     { key: 'status', label: 'Status' },
@@ -246,16 +258,18 @@ const ApprovalRules = () => {
     {
       name: 'assignedRoles',
       label: 'Assigned Roles',
-      type: 'select' as const,
+      type: 'multiselect' as const,
       options: roles.map(role => ({ value: role.id, label: `${role.name} (${role.department})` })),
-      value: editingRule?.assignedRoles?.[0] || '',
+      value: editingRule?.assignedRoles || [],
+      multiple: true,
     },
     {
       name: 'assignedUsers',
       label: 'Assigned Users (Optional)',
-      type: 'select' as const,
+      type: 'multiselect' as const,
       options: users.map(user => ({ value: user.id, label: user.fullName })),
-      value: editingRule?.assignedUsers?.[0] || '',
+      value: editingRule?.assignedUsers || [],
+      multiple: true,
     },
   ];
 
@@ -264,7 +278,7 @@ const ApprovalRules = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Approval Rules</h1>
-          <p className="text-gray-600 mt-2">Configure approval workflows based on conditions</p>
+          <p className="text-gray-600 mt-2">Configure multiple approval workflows with multi-select assignments</p>
         </div>
         {hasPermission('create') && (
           <Button onClick={handleCreate}>

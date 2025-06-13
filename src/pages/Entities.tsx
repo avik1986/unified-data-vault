@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import DataTable from '../components/DataTable';
 import FormDialog from '../components/FormDialog';
 import { mockDataService } from '../services/mockDataService';
-import { Entity, Attribute, Category, Geography } from '../types';
+import { Entity, Attribute, Category, Geography, EntityAttribute } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
 const Entities = () => {
@@ -163,10 +163,17 @@ const Entities = () => {
     try {
       setFormLoading(true);
       
+      // Build entity attributes from selected attributes
+      const selectedAttributeIds = Array.isArray(formData.attributeIds) ? formData.attributeIds : [formData.attributeIds].filter(Boolean);
+      const entityAttributes: EntityAttribute[] = selectedAttributeIds.map((attrId: string) => ({
+        attributeId: attrId,
+        isRequired: true, // Default to required, can be customized later
+      }));
+
       const entityData = {
         name: formData.name,
         entityType: formData.entityType,
-        attributeIds: Array.isArray(formData.attributeIds) ? formData.attributeIds : [formData.attributeIds].filter(Boolean),
+        attributes: entityAttributes,
         categoryIds: Array.isArray(formData.categoryIds) ? formData.categoryIds : [formData.categoryIds].filter(Boolean),
         geographyIds: Array.isArray(formData.geographyIds) ? formData.geographyIds : [formData.geographyIds].filter(Boolean),
       };
@@ -212,12 +219,12 @@ const Entities = () => {
     { key: 'name', label: 'Name' },
     { key: 'entityType', label: 'Entity Type' },
     { 
-      key: 'attributeIds', 
+      key: 'attributes', 
       label: 'Attributes',
-      render: (attributeIds: string[]) => {
-        if (!attributeIds || attributeIds.length === 0) return 'None';
-        const attributeNames = attributeIds.map(id => {
-          const attr = attributes.find(a => a.id === id);
+      render: (entityAttributes: EntityAttribute[]) => {
+        if (!entityAttributes || entityAttributes.length === 0) return 'None';
+        const attributeNames = entityAttributes.map(ea => {
+          const attr = attributes.find(a => a.id === ea.attributeId);
           return attr?.fieldName || 'Unknown';
         });
         return attributeNames.join(', ');
@@ -267,24 +274,30 @@ const Entities = () => {
     },
     {
       name: 'attributeIds',
-      label: 'Attributes',
-      type: 'select' as const,
-      options: attributes.map(attr => ({ value: attr.id, label: attr.fieldName })),
-      value: editingEntity?.attributeIds?.[0] || '',
+      label: 'Attributes (One-to-Many)',
+      type: 'multiselect' as const,
+      options: attributes.map(attr => ({ 
+        value: attr.id, 
+        label: `${attr.fieldName} (${attr.dataType})` 
+      })),
+      value: editingEntity?.attributes?.map(ea => ea.attributeId) || [],
+      multiple: true,
     },
     {
       name: 'categoryIds',
       label: 'Categories',
-      type: 'select' as const,
+      type: 'multiselect' as const,
       options: categories.map(cat => ({ value: cat.id, label: cat.name })),
-      value: editingEntity?.categoryIds?.[0] || '',
+      value: editingEntity?.categoryIds || [],
+      multiple: true,
     },
     {
       name: 'geographyIds',
       label: 'Geographies',
-      type: 'select' as const,
+      type: 'multiselect' as const,
       options: geographies.map(geo => ({ value: geo.id, label: `${geo.name} (${geo.type})` })),
-      value: editingEntity?.geographyIds?.[0] || '',
+      value: editingEntity?.geographyIds || [],
+      multiple: true,
     },
   ];
 
@@ -293,7 +306,7 @@ const Entities = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Entities</h1>
-          <p className="text-gray-600 mt-2">Manage business entities with dynamic attributes</p>
+          <p className="text-gray-600 mt-2">Manage business entities with one-to-many attribute relationships</p>
         </div>
         {hasPermission('create') && (
           <Button onClick={handleCreate}>

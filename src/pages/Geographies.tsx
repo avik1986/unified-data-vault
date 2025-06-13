@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import DataTable from '../components/DataTable';
+import TreeView from '../components/TreeView';
 import FormDialog from '../components/FormDialog';
 import { mockDataService } from '../services/mockDataService';
 import { Geography } from '../types';
@@ -12,12 +12,12 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Geographies = () => {
   const [geographies, setGeographies] = useState<Geography[]>([]);
-  const [filteredGeographies, setFilteredGeographies] = useState<Geography[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDialog, setShowDialog] = useState(false);
   const [editingGeography, setEditingGeography] = useState<Geography | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [selectedGeography, setSelectedGeography] = useState<Geography | null>(null);
   
   const { toast } = useToast();
   const { currentUser, hasPermission } = useAuth();
@@ -25,13 +25,6 @@ const Geographies = () => {
   useEffect(() => {
     loadGeographies();
   }, []);
-
-  useEffect(() => {
-    const filtered = geographies.filter(geography =>
-      geography.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredGeographies(filtered);
-  }, [geographies, searchTerm]);
 
   const loadGeographies = async () => {
     try {
@@ -192,27 +185,9 @@ const Geographies = () => {
     }
   };
 
-  const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'type', label: 'Type' },
-    { 
-      key: 'parentId', 
-      label: 'Parent Geography',
-      render: (parentId: string) => {
-        if (!parentId) return 'Root Geography';
-        const parent = geographies.find(g => g.id === parentId);
-        return parent?.name || 'Unknown';
-      }
-    },
-    { key: 'status', label: 'Status' },
-    { key: 'approvalStatus', label: 'Approval Status' },
-    { key: 'createdBy', label: 'Created By' },
-    { 
-      key: 'createdDate', 
-      label: 'Created Date',
-      render: (date: string) => new Date(date).toLocaleDateString()
-    },
-  ];
+  const filteredGeographies = geographies.filter(geography =>
+    geography.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const formFields = [
     {
@@ -254,7 +229,7 @@ const Geographies = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Geographies</h1>
-          <p className="text-gray-600 mt-2">Manage geography hierarchy</p>
+          <p className="text-gray-600 mt-2">Manage geography hierarchy with L0, L1, L2 levels</p>
         </div>
         {hasPermission('create') && (
           <Button onClick={handleCreate}>
@@ -276,16 +251,117 @@ const Geographies = () => {
         </div>
       </div>
 
-      <DataTable
-        data={filteredGeographies}
-        columns={columns}
-        onEdit={hasPermission('edit') ? handleEdit : undefined}
-        onDelete={hasPermission('delete') ? handleDelete : undefined}
-        onSubmitForApproval={hasPermission('create') ? handleSubmitForApproval : undefined}
-        onApprove={hasPermission('approve') ? handleApprove : undefined}
-        onReject={hasPermission('reject') ? handleReject : undefined}
-        loading={loading}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">Geography Tree Structure</h3>
+            <div className="mb-4 text-sm text-gray-600">
+              <span className="bg-gray-200 px-2 py-1 rounded mr-2 font-mono">L0</span> Country
+              <span className="bg-gray-200 px-2 py-1 rounded mx-2 font-mono">L1</span> State
+              <span className="bg-gray-200 px-2 py-1 rounded mx-2 font-mono">L2</span> City/Zone
+            </div>
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading geographies...</div>
+            ) : (
+              <TreeView
+                data={filteredGeographies}
+                onSelect={setSelectedGeography}
+                selectedId={selectedGeography?.id}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          {selectedGeography && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Geography Details</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <p className="text-sm">{selectedGeography.name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Type</label>
+                  <p className="text-sm">{selectedGeography.type}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Parent Geography</label>
+                  <p className="text-sm">
+                    {selectedGeography.parentId ? 
+                      geographies.find(g => g.id === selectedGeography.parentId)?.name || 'Unknown' : 
+                      'Root Geography'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Status</label>
+                  <p className="text-sm">{selectedGeography.status}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Approval Status</label>
+                  <p className="text-sm">{selectedGeography.approvalStatus}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created By</label>
+                  <p className="text-sm">{selectedGeography.createdBy}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created Date</label>
+                  <p className="text-sm">{new Date(selectedGeography.createdDate).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-2">
+                {hasPermission('edit') && (
+                  <Button 
+                    onClick={() => handleEdit(selectedGeography)} 
+                    className="w-full"
+                    variant="outline"
+                  >
+                    Edit Geography
+                  </Button>
+                )}
+                {hasPermission('create') && selectedGeography.approvalStatus === 'Draft' && (
+                  <Button 
+                    onClick={() => handleSubmitForApproval(selectedGeography)} 
+                    className="w-full"
+                    variant="outline"
+                  >
+                    Submit for Approval
+                  </Button>
+                )}
+                {hasPermission('approve') && selectedGeography.approvalStatus === 'Pending' && (
+                  <>
+                    <Button 
+                      onClick={() => handleApprove(selectedGeography)} 
+                      className="w-full"
+                    >
+                      Approve
+                    </Button>
+                    <Button 
+                      onClick={() => handleReject(selectedGeography)} 
+                      className="w-full"
+                      variant="destructive"
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {hasPermission('delete') && (
+                  <Button 
+                    onClick={() => handleDelete(selectedGeography)} 
+                    className="w-full"
+                    variant="destructive"
+                  >
+                    Delete Geography
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <FormDialog
         open={showDialog}

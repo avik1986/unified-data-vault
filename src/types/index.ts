@@ -20,6 +20,7 @@ export interface Category extends BaseEntity {
   name: string;
   parentId?: string;
   children?: Category[];
+  level?: number;
 }
 
 export interface Geography extends BaseEntity {
@@ -27,6 +28,7 @@ export interface Geography extends BaseEntity {
   type: 'Country' | 'State' | 'City' | 'Zone';
   parentId?: string;
   children?: Geography[];
+  level?: number;
 }
 
 export interface Role extends BaseEntity {
@@ -57,15 +59,23 @@ export interface Attribute extends BaseEntity {
 }
 
 export interface ValidationRule {
-  type: 'length' | 'range' | 'regex';
-  value: string | number;
+  type: 'length' | 'range' | 'regex' | 'required';
+  value: string | number | boolean;
   message: string;
+}
+
+export interface EntityAttribute {
+  attributeId: string;
+  value?: string;
+  defaultValue?: string;
+  validationRules?: ValidationRule[];
+  isRequired?: boolean;
 }
 
 export interface Entity extends BaseEntity {
   name: string;
   entityType: string;
-  attributeIds: string[];
+  attributes: EntityAttribute[];
   categoryIds: string[];
   geographyIds: string[];
   attributeValues?: Record<string, any>;

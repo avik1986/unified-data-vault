@@ -1,7 +1,6 @@
-
 import { 
   Category, Geography, Role, User, Attribute, Entity, ApprovalRule, 
-  AuditLog, ApprovalRequest, Status, ApprovalStatus 
+  AuditLog, ApprovalRequest, Status, ApprovalStatus, EntityAttribute 
 } from '../types';
 
 // Mock data storage
@@ -241,7 +240,11 @@ class MockDataService {
       id: '1',
       name: 'iPhone 15',
       entityType: 'Product',
-      attributeIds: ['1', '2', '3'],
+      attributes: [
+        { attributeId: '1', value: 'iPhone 15', isRequired: true },
+        { attributeId: '2', value: '999', isRequired: true },
+        { attributeId: '3', value: 'Apple', isRequired: false }
+      ],
       categoryIds: ['2'],
       geographyIds: ['1'],
       status: 'Active' as Status,
@@ -258,7 +261,11 @@ class MockDataService {
       id: '2',
       name: 'Samsung Galaxy S24',
       entityType: 'Product',
-      attributeIds: ['1', '2', '3'],
+      attributes: [
+        { attributeId: '1', value: 'Samsung Galaxy S24', isRequired: true },
+        { attributeId: '2', value: '899', isRequired: true },
+        { attributeId: '3', value: 'Samsung', isRequired: false }
+      ],
       categoryIds: ['2'],
       geographyIds: ['2'],
       status: 'Active' as Status,
@@ -305,10 +312,30 @@ class MockDataService {
         }
       ],
       assignedRoles: ['1'],
+      assignedUsers: ['2'],
       status: 'Active' as Status,
       approvalStatus: 'Approved' as ApprovalStatus,
       createdBy: 'admin',
       createdDate: '2024-01-01',
+    },
+    {
+      id: '3',
+      ruleName: 'Category Management Rule',
+      entityType: 'Category',
+      conditions: [
+        {
+          id: '3',
+          attributeId: '1',
+          operator: 'equals',
+          value: 'any'
+        }
+      ],
+      assignedRoles: ['1', '2'],
+      assignedUsers: ['1', '3'],
+      status: 'Active' as Status,
+      approvalStatus: 'Approved' as ApprovalStatus,
+      createdBy: 'admin',
+      createdDate: '2024-01-02',
     }
   ];
 

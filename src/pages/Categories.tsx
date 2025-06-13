@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import DataTable from '../components/DataTable';
+import TreeView from '../components/TreeView';
 import FormDialog from '../components/FormDialog';
 import { mockDataService } from '../services/mockDataService';
 import { Category } from '../types';
@@ -12,12 +12,12 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Categories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDialog, setShowDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   
   const { toast } = useToast();
   const { currentUser, hasPermission } = useAuth();
@@ -25,13 +25,6 @@ const Categories = () => {
   useEffect(() => {
     loadCategories();
   }, []);
-
-  useEffect(() => {
-    const filtered = categories.filter(category =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCategories(filtered);
-  }, [categories, searchTerm]);
 
   const loadCategories = async () => {
     try {
@@ -190,26 +183,9 @@ const Categories = () => {
     }
   };
 
-  const columns = [
-    { key: 'name', label: 'Name' },
-    { 
-      key: 'parentId', 
-      label: 'Parent Category',
-      render: (parentId: string) => {
-        if (!parentId) return 'Root Category';
-        const parent = categories.find(c => c.id === parentId);
-        return parent?.name || 'Unknown';
-      }
-    },
-    { key: 'status', label: 'Status' },
-    { key: 'approvalStatus', label: 'Approval Status' },
-    { key: 'createdBy', label: 'Created By' },
-    { 
-      key: 'createdDate', 
-      label: 'Created Date',
-      render: (date: string) => new Date(date).toLocaleDateString()
-    },
-  ];
+  const filteredCategories = categories.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const formFields = [
     {
@@ -238,7 +214,7 @@ const Categories = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-2">Manage category hierarchy</p>
+          <p className="text-gray-600 mt-2">Manage category hierarchy in tree format</p>
         </div>
         {hasPermission('create') && (
           <Button onClick={handleCreate}>
@@ -260,16 +236,99 @@ const Categories = () => {
         </div>
       </div>
 
-      <DataTable
-        data={filteredCategories}
-        columns={columns}
-        onEdit={hasPermission('edit') ? handleEdit : undefined}
-        onDelete={hasPermission('delete') ? handleDelete : undefined}
-        onSubmitForApproval={hasPermission('create') ? handleSubmitForApproval : undefined}
-        onApprove={hasPermission('approve') ? handleApprove : undefined}
-        onReject={hasPermission('reject') ? handleReject : undefined}
-        loading={loading}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">Category Tree Structure</h3>
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading categories...</div>
+            ) : (
+              <TreeView
+                data={filteredCategories}
+                onSelect={setSelectedCategory}
+                selectedId={selectedCategory?.id}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          {selectedCategory && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Category Details</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <p className="text-sm">{selectedCategory.name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Status</label>
+                  <p className="text-sm">{selectedCategory.status}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Approval Status</label>
+                  <p className="text-sm">{selectedCategory.approvalStatus}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created By</label>
+                  <p className="text-sm">{selectedCategory.createdBy}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created Date</label>
+                  <p className="text-sm">{new Date(selectedCategory.createdDate).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-2">
+                {hasPermission('edit') && (
+                  <Button 
+                    onClick={() => handleEdit(selectedCategory)} 
+                    className="w-full"
+                    variant="outline"
+                  >
+                    Edit Category
+                  </Button>
+                )}
+                {hasPermission('create') && selectedCategory.approvalStatus === 'Draft' && (
+                  <Button 
+                    onClick={() => handleSubmitForApproval(selectedCategory)} 
+                    className="w-full"
+                    variant="outline"
+                  >
+                    Submit for Approval
+                  </Button>
+                )}
+                {hasPermission('approve') && selectedCategory.approvalStatus === 'Pending' && (
+                  <>
+                    <Button 
+                      onClick={() => handleApprove(selectedCategory)} 
+                      className="w-full"
+                    >
+                      Approve
+                    </Button>
+                    <Button 
+                      onClick={() => handleReject(selectedCategory)} 
+                      className="w-full"
+                      variant="destructive"
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {hasPermission('delete') && (
+                  <Button 
+                    onClick={() => handleDelete(selectedCategory)} 
+                    className="w-full"
+                    variant="destructive"
+                  >
+                    Delete Category
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <FormDialog
         open={showDialog}
