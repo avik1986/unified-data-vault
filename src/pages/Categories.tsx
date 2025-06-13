@@ -9,6 +9,15 @@ import { mockDataService } from '../services/mockDataService';
 import { Category } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
+// Import TreeItem interface from TreeView component
+interface TreeItem {
+  id: string;
+  name: string;
+  level?: number;
+  children?: TreeItem[];
+  parentId?: string;
+}
+
 const Categories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);

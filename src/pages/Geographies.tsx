@@ -9,6 +9,15 @@ import { mockDataService } from '../services/mockDataService';
 import { Geography } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
+// Import TreeItem interface from TreeView component
+interface TreeItem {
+  id: string;
+  name: string;
+  level?: number;
+  children?: TreeItem[];
+  parentId?: string;
+}
+
 const Geographies = () => {
   const [geographies, setGeographies] = useState<Geography[]>([]);
   const [loading, setLoading] = useState(true);
